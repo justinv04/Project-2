@@ -29,8 +29,8 @@ int main() {
         cerr << "Unable to create the server socket\n\n";
 
     server.sin_family = AF_INET;
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
-    server.sin_port = htons(8080);
+    server.sin_addr.s_addr = INADDR_ANY; // allow connection from all computers on the local network
+    server.sin_port = htons(8080);  // ensure your firewall is disabled for this port
     server_len = sizeof(server);
 
     if (bind(server_socket, (SOCKADDR*)&server, server_len) != 0)
@@ -88,7 +88,6 @@ int main() {
                 memset(buffer, 0, BUFFER_SIZE);
                 int bytes = recv(client_socket, buffer, BUFFER_SIZE, 0);
                 if (bytes <= 0) {
-                    // Connection closed or error
                     cerr << "Client disconnected or error occurred.\n\n";
                     closesocket(client_socket);
                     client_sockets.erase(client_sockets.begin() + i);
