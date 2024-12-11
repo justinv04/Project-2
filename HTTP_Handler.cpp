@@ -3,8 +3,8 @@
 #include <iostream>
 #include <sstream>
 #include <utility>
-#include <map>
 #include <vector>
+#include <map>
 
 using std::string;
 using std::vector;
@@ -81,72 +81,10 @@ class HTTP_Handler {
             }
         };
 
-        string handleGetRequest(const string endpoint, const string data_str) {
-            int status;
-            string content_type, content;
-
-            // DO SOMETHING
-
-            status = 200, content_type = "application/json";
-            return makeResponse(status, content_type, content);
-        };
-
-        string handlePostRequest(const string endpoint, const string data_str) {
-            int status;
-            string content_type, content;
-
-            // DO SOMETHING
-
-            status = 200;
-            content_type = "text/plain";
-            return makeResponse(status, content_type, content);
-        };
-
-        static void parseRequestElements(const string &request, string &type, string &endpoint, string &data, string &client_url) {
-            size_t index = 0;
-
-            while(request[index] != ' ') 
-                type += request[index++];
-
-            index += 2;
-
-            while(request[index] != ' ')
-                endpoint += request[index++];
-
-            while(request[index] != '\r')
-
-            index = request.find("\r\n\r\n") + 4;
-            data = request.substr(index, request.length() - index);
-        }
-
     public: 
 
         string handleRequest(const string request) {
-
-            std::cout << request << "\n\n";
-
-            string type_str, endpoint_str, data_str, client_url;
-            parseRequestElements(request, type_str, endpoint_str, data_str, client_url);
-
-            REQUEST_TYPE request_type = getRequestType(type_str);
-
-            string content;
-            switch(request_type) {
-                case GET: {
-                    content = handleGetRequest(endpoint_str, data_str);
-                    break;
-                }
-                case POS: {
-                    content = handlePostRequest(endpoint_str, data_str);
-                    break;
-                }
-                case OPT: {
-                    content = makeResponse(204);
-                    break;
-                }
-                default: content = RESPONSE_404;
-            }
-            return content;
+            return makeResponse(200, "application/json", "{\"user\": \"Justin\", \"message\": \"response\"}");
         };
 
         static string makeResponse(const int status, const string content_type = "", const string content = "") {
