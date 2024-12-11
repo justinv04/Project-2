@@ -11,7 +11,14 @@ using std::vector;
 using std::pair;
 using std::map;
 
-static const string SERVER_URL = "http://127.0.0.1:8080";
+static const string SERVER_URL = 
+            "http://127.0.0.1:8080";
+
+static const string OPTIONS_APPENDIX =
+            "Access-Control-Allow-Origin: *\r\n"
+            "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
+            "Access-Control-Allow-Headers: Content-Type\r\n"
+            "Access-Control-Max-Age: 3600\r\n";
 
 static const string RESPONSE_404 =
     "HTTP/1.1 404 Not Found\r\n"
@@ -74,17 +81,17 @@ class HTTP_Handler {
             }
         };
 
-        string handleGetRequest(const string endpoint, const string data_str, const string client_url) {
+        string handleGetRequest(const string endpoint, const string data_str) {
             int status;
             string content_type, content;
 
             // DO SOMETHING
 
             status = 200, content_type = "application/json";
-            return makeResponse(status, client_url, content_type, content);
+            return makeResponse(status, content_type, content);
         };
 
-        string handlePostRequest(const string endpoint, const string data_str, const string client_url) {
+        string handlePostRequest(const string endpoint, const string data_str) {
             int status;
             string content_type, content;
 
@@ -92,7 +99,7 @@ class HTTP_Handler {
 
             status = 200;
             content_type = "text/plain";
-            return makeResponse(status, client_url, content_type, content);
+            return makeResponse(status, content_type, content);
         };
 
         static void parseRequestElements(const string &request, string &type, string &endpoint, string &data, string &client_url) {
@@ -112,14 +119,6 @@ class HTTP_Handler {
             data = request.substr(index, request.length() - index);
         }
 
-        static string makeOptionsAppendix (const string client_url) {
-            string response = "Access-Control-Allow-Origin: " + client_url + "\r\n";
-            response += "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n";
-            response += "Access-Control-Allow-Headers: Content-Type\r\n";
-            response += "Access-Control-Max-Age: 3600\r\n";
-            return response;
-        }
-
     public: 
 
         string handleRequest(const string request) {
@@ -134,15 +133,15 @@ class HTTP_Handler {
             string content;
             switch(request_type) {
                 case GET: {
-                    content = handleGetRequest(endpoint_str, data_str, client_url);
+                    content = handleGetRequest(endpoint_str, data_str);
                     break;
                 }
                 case POS: {
-                    content = handlePostRequest(endpoint_str, data_str, client_url);
+                    content = handlePostRequest(endpoint_str, data_str);
                     break;
                 }
                 case OPT: {
-                    content = makeResponse(204, client_url);
+                    content = makeResponse(204);
                     break;
                 }
                 default: content = RESPONSE_404;
@@ -150,13 +149,13 @@ class HTTP_Handler {
             return content;
         };
 
-        static string makeResponse(const int status,  const string client_url, const string content_type = "", const string content = "") {
+        static string makeResponse(const int status, const string content_type = "", const string content = "") {
             string response = "HTTP/1.1 " + std::to_string(status) + " " + STATUS_CODE_MAP[status] + "\r\n";
                 
             if(status != 204)
                 response += ("Content-Type: " + content_type + "\r\n");
             
-            response += makeOptionsAppendix(client_url);
+            response += OPTIONS_APPENDIX;
             response += ("Content-Length: " + std::to_string(content.length()) + "\r\nConnection: keep-alive\r\n\r\n" + content);
 
             return response;
