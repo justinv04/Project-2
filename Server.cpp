@@ -41,9 +41,6 @@ int main() {
 
     std::cout << "Listening on localhost port 8080...\n\n";
 
-    int bytes = 0;
-    string request, response, header;
-
     fd_set readfds;
     char buffer[30720];
 
@@ -57,9 +54,9 @@ int main() {
         // add all client sockets to the set
         for (SOCKET client_socket : client_sockets) {
             FD_SET(client_socket, &readfds);
-            if (client_socket > max_socket) {
+
+            if (client_socket > max_socket)
                 max_socket = client_socket;
-            }
         }
 
         // wait for activity on any socket
@@ -72,11 +69,24 @@ int main() {
         // check for new connections on the server socket
         if (FD_ISSET(server_socket, &readfds)) {
             SOCKET client_socket = accept(server_socket, (SOCKADDR*)&server, &server_len);
-            if (client_socket == INVALID_SOCKET) {
+
+            if (client_socket == INVALID_SOCKET)
                 cerr << "Unable to create the client socket\n\n";
-            } else {
+            else {
                 client_sockets.push_back(client_socket);
-                std::cout << "New connection accepted.\n";
+
+            //     string welcome_response = HTTP_Handler::makeResponse(200, "text/plain", "Connected to the server...\n\n");
+                
+            //     int bytes_sent = 0, total_bytes = 0;
+            //     while (total_bytes < welcome_response.size()) {
+            //         bytes_sent = send(client_socket, welcome_response.c_str() + total_bytes, welcome_response.size() - total_bytes, 0);
+            //         if (bytes_sent < 0) {
+            //             cerr << "Unable to send the server response\n\n";
+            //             break;
+            //         }
+            //         total_bytes += bytes_sent;
+            //     }
+            //     std::cout << "New connection accepted.\n";
             }
         }
 
@@ -87,35 +97,40 @@ int main() {
             if (FD_ISSET(client_socket, &readfds)) {
                 memset(buffer, 0, BUFFER_SIZE);
                 int bytes = recv(client_socket, buffer, BUFFER_SIZE, 0);
-                if (bytes <= 0) {
-                    cerr << "Client disconnected or error occurred.\n\n";
-                    closesocket(client_socket);
-                    client_sockets.erase(client_sockets.begin() + i);
-                    --i; // Adjust index after removal
-                    continue;
+
+                if (bytes < 1) {
+                    if (bytes == 0) 
+                        continue;
+                    else {
+                        cerr << "Client disconnected or error occurred.\n\n";
+                        closesocket(client_socket);
+                        client_sockets.erase(client_sockets.begin() + i);
+                        --i;
+                        continue;
+                    }
                 }
 
                 string request(buffer);
-                cerr << "Request: " << request << "\n\n\n";
+                cerr << "Request:\n" << request << "\n\n";
 
                 string response = http_handler.handleRequest(request);
-                cerr << "Response: " << response << "\n\n\n";
+                cerr << "Response:\n" << response << "\n\n---------------------------------------------------------\n\n";
 
-                int bytes_sent = 0;
-                unsigned int total_bytes = 0;
-                while (total_bytes < response.size()) {
-                    bytes_sent = send(client_socket, response.c_str() + total_bytes, response.size() - total_bytes, 0);
-                    if (bytes_sent < 0) {
-                        cerr << "Unable to send the server response\n\n";
-                        break;
+                // Send the response to all connected clients
+                for (SOCKET curr_client_socket : client_sockets) {
+                    if (curr_client_socket != client_socket) {  // Avoid sending to the sender
+                        int bytes_sent = 0, total_bytes = 0;
+                        
+                        while (total_bytes < response.size()) {
+                            bytes_sent = send(curr_client_socket, response.c_str() + total_bytes, response.size() - total_bytes, 0);
+                            if (bytes_sent < 0) {
+                                cerr << "Unable to send the server response\n\n";
+                                break;
+                            }
+                            total_bytes += bytes_sent;
+                        }
                     }
-                    total_bytes += bytes_sent;
                 }
-                
-                // close client socket
-                closesocket(client_socket);
-                client_sockets.erase(client_sockets.begin() + i);
-                --i;
             }
         }
     }
