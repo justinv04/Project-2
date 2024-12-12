@@ -74,7 +74,7 @@ int main() {
 
             if (client_socket == INVALID_SOCKET)
                 cerr << "Unable to create the client socket\n\n";
-            else {
+            else { // new valid socket
                 client_sockets.push_back(client_socket);
 
                 string welcome_response = HTTP_Handler::makeResponse(200, "application/json", "{\"user\": \"Server\", \"message\": \"Connection Established\"}");
@@ -93,17 +93,6 @@ int main() {
                         }
                     }
                 }
-                
-                int bytes_sent = 0, total_bytes = 0;
-                while (total_bytes < welcome_response.size()) {
-                    bytes_sent = send(client_socket, welcome_response.c_str() + total_bytes, welcome_response.size() - total_bytes, 0);
-                    if (bytes_sent < 0) {
-                        cerr << "Unable to send the server response\n\n";
-                        break;
-                    }
-                    total_bytes += bytes_sent;
-                }
-                std::cout << "New connection accepted.\n";
             }
         }
 
