@@ -74,7 +74,7 @@ def send_message(sock, message_entry, chat_widget):
     # Immediately show the user's own message in the GUI
     add_message_to_chat(chat_widget, f"{display_name}: {msg}")
 
-    payload = {"message": msg}
+    payload = {"user": display_name, "message": msg}
     payload_str = json.dumps(payload)
     request = (
         f"POST / HTTP/1.1\r\n"
