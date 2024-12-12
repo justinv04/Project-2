@@ -83,7 +83,8 @@ class HTTP_Handler {
     public: 
 
         string handleRequest(const string request) {
-            return makeResponse(200, "application/json", "{\"user\": \"Justin\", \"message\": \"response\"}");
+            string message_json = request.substr(request.find('{') - 1, request.find('}') + 1);
+            return makeResponse(200, "application/json", message_json);
         };
 
         static string makeResponse(const int status, const string content_type = "", const string content = "") {
