@@ -22,7 +22,7 @@ def parse_http_response(response_data):
         response_str = response_data.decode('utf-8', errors='replace')
         # Split headers and body
         headers, body = response_str.split("\r\n\r\n", 1)
-        # Parse JSON body if possible
+        # Parse JSON body
         data = json.loads(body)
         return data
     except:
@@ -56,8 +56,9 @@ def receive_messages(sock, chat_widget):
                     buffer = buffer[total_length:]
                 
                 data = parse_http_response(response_data)
+                user = data.get("user", "Unknown")
                 msg = data.get("message", "No message")
-                add_message_to_chat(chat_widget, msg)
+                add_message_to_chat(chat_widget, f"{user}: {msg}")
         except Exception as e:
             print("Error receiving messages:", e)
             break
@@ -74,6 +75,7 @@ def send_message(sock, message_entry, chat_widget):
     # Immediately show the user's own message in the GUI
     add_message_to_chat(chat_widget, f"{display_name}: {msg}")
 
+    # Payload format: {"user": display_name, "message": msg}
     payload = {"user": display_name, "message": msg}
     payload_str = json.dumps(payload)
     request = (
