@@ -58,26 +58,25 @@ static map<int, string> STATUS_CODE_MAP = {
 };
 
 class HTTP_Handler {
-    using enum REQUEST_TYPE;
     
     private:
 
         REQUEST_TYPE getRequestType(const string request_type_str) {
             switch(request_type_str[0]) {
-                case 'C':           return CON;
-                case 'D':           return DEL;
-                case 'G':           return GET;
-                case 'H':           return HED;
-                case 'O':           return OPT;
-                case 'T':           return TRC;
+                case 'C':           return REQUEST_TYPE::CON;
+                case 'D':           return REQUEST_TYPE::DEL;
+                case 'G':           return REQUEST_TYPE::GET;
+                case 'H':           return REQUEST_TYPE::HED;
+                case 'O':           return REQUEST_TYPE::OPT;
+                case 'T':           return REQUEST_TYPE::TRC;
                 case 'P': {
                     switch(request_type_str[1]) {
-                        case 'A':   return PAT;
-                        case 'O':   return POS;
-                        case 'U':   return PUT;
+                        case 'A':   return REQUEST_TYPE::PAT;
+                        case 'O':   return REQUEST_TYPE::POS;
+                        case 'U':   return REQUEST_TYPE::PUT;
                         default: {}
                 }}
-                default: return UNK;
+                default: return REQUEST_TYPE::UNK;
             }
         };
 

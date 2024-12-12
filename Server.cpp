@@ -19,6 +19,8 @@ int main() {
     WSADATA wsaData;
     SOCKET server_socket;
     vector<SOCKET> client_sockets = {};
+
+    vector<string> messages = {};
     HTTP_Handler http_handler = HTTP_Handler();
 
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -75,18 +77,18 @@ int main() {
             else {
                 client_sockets.push_back(client_socket);
 
-            //     string welcome_response = HTTP_Handler::makeResponse(200, "text/plain", "Connected to the server...\n\n");
+                string welcome_response = HTTP_Handler::makeResponse(200, "application/json", "{\"user\": \"Server\", \"message\": \"Connection Established\"}");
                 
-            //     int bytes_sent = 0, total_bytes = 0;
-            //     while (total_bytes < welcome_response.size()) {
-            //         bytes_sent = send(client_socket, welcome_response.c_str() + total_bytes, welcome_response.size() - total_bytes, 0);
-            //         if (bytes_sent < 0) {
-            //             cerr << "Unable to send the server response\n\n";
-            //             break;
-            //         }
-            //         total_bytes += bytes_sent;
-            //     }
-            //     std::cout << "New connection accepted.\n";
+                int bytes_sent = 0, total_bytes = 0;
+                while (total_bytes < welcome_response.size()) {
+                    bytes_sent = send(client_socket, welcome_response.c_str() + total_bytes, welcome_response.size() - total_bytes, 0);
+                    if (bytes_sent < 0) {
+                        cerr << "Unable to send the server response\n\n";
+                        break;
+                    }
+                    total_bytes += bytes_sent;
+                }
+                std::cout << "New connection accepted.\n";
             }
         }
 
@@ -98,7 +100,7 @@ int main() {
                 memset(buffer, 0, BUFFER_SIZE);
                 int bytes = recv(client_socket, buffer, BUFFER_SIZE, 0);
 
-                if (bytes < 1) {
+                if (bytes <= 0) {
                     if (bytes == 0) 
                         continue;
                     else {
