@@ -5,7 +5,7 @@ import json
 import threading
 import time
 
-SERVER_URL = "http://10.9.139.189:8080 "  # Adjust to your server's IP if needed
+SERVER_URL = "http://10.9.139.189:8080"  # Adjust as needed, removed trailing space
 
 def add_message_to_chat(chat_widget, msg):
     chat_widget.config(state='normal')
@@ -24,10 +24,12 @@ def update_chat(chat_widget, messages):
 
 def fetch_messages(chat_widget):
     try:
-        response = requests.get(SERVER_URL + "/messages", timeout=3)
+        # If the server doesn't have a /messages endpoint, just call the base URL
+        response = requests.get(SERVER_URL, timeout=3)
         response.raise_for_status()
         data = response.json()
-        msgs = data.get("messages", [])
+        # If data is like {"user": "Justin", "message": "response"}, handle it:
+        msgs = [data]  # Just wrap single message in a list
         update_chat(chat_widget, msgs)
     except requests.RequestException as e:
         print("Error fetching messages:", e)
@@ -49,7 +51,7 @@ def send_message(message_entry, chat_widget):
         print(response.json())
         message_entry.delete(0, tk.END)
         # After sending, fetch updated messages
-        fetch_messages(chat_widget)
+        # fetch_messages(chat_widget)
     except requests.RequestException as e:
         print("RequestException occurred:", str(e))
 
@@ -78,7 +80,7 @@ def gui():
     send_button.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
 
     # Start a thread to poll messages from the server
-    threading.Thread(target=poll_messages, args=(chat_log,), daemon=True).start()
+    # threading.Thread(target=poll_messages, args=(chat_log,), daemon=True).start()
 
     root.mainloop()
 
