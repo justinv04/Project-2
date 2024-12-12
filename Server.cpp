@@ -78,6 +78,21 @@ int main() {
                 client_sockets.push_back(client_socket);
 
                 string welcome_response = HTTP_Handler::makeResponse(200, "application/json", "{\"user\": \"Server\", \"message\": \"Connection Established\"}");
+
+                for (SOCKET curr_client_socket : client_sockets) {
+                    if (curr_client_socket != client_socket) {  // Avoid sending to the sender
+                        int bytes_sent = 0, total_bytes = 0;
+                        
+                        while (total_bytes < welcome_response.size()) {
+                            bytes_sent = send(curr_client_socket, welcome_response.c_str() + total_bytes, welcome_response.size() - total_bytes, 0);
+                            if (bytes_sent < 0) {
+                                cerr << "Unable to send the server response\n\n";
+                                break;
+                            }
+                            total_bytes += bytes_sent;
+                        }
+                    }
+                }
                 
                 int bytes_sent = 0, total_bytes = 0;
                 while (total_bytes < welcome_response.size()) {
